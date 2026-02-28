@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>DRAKE THE BEST SINGER</title> 
+        <style>
+            h1 {
+                color: 0012AB;
+            }
+        </style>
+    </head>
+<body>
+    <h1>This is why drake is the best singer</h1>
+    <p>For me persornally I don't love drake at all but the thing with is how he has influenced many people with his songs
+        His G </p>
+</body>
+</html>

@@ -1,0 +1,42 @@
+.button-link {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: rgb(114, 165, 42); 
+    color: rgb(1, 0, 22);
+    text-decoration: none; 
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+.button-link:hover {
+    background-color: rgb(205, 50, 117); /* Matches your paragraph color */
+    color: #333;
+    transform: translateY(10px); /* Makes it "pop" up slightly */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+h1 {
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-style: oblique;
+    font-weight: bold;
+}
+ body{
+            background-color:rgb(9, 118, 118);
+            background-size: cover;
+ }
+        h1 { color :brown}
+        p{ color: rgb(1, 2, 0);}
+        .icon-btn {
+    width: 400px;
+    height: 400px;
+    border: 100px;;
+    cursor: pointer;
+    background-color:transparent; /* Makes the button background see-through */
+    background-image: url('Jabez.jpeg'); /* Your icon file */
+    background-size: contain; /* Scales the icon to fit inside the 40px box */
+    background-repeat: no-repeat;
+    float: inline-start;
+}
