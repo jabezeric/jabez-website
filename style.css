@@ -35,7 +35,7 @@ h1 {
     border: 100px;;
     cursor: pointer;
     background-color:transparent; /* Makes the button background see-through */
-    background-image: url('Jabez.jpeg'); /* Your icon file */
+    background-image: url('anime.jpg'); /* Your icon file */
     background-size: contain; /* Scales the icon to fit inside the 40px box */
     background-repeat: no-repeat;
     float: inline-start;
