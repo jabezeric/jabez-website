@@ -5,7 +5,7 @@
     color: rgb(1, 0, 22);
     text-decoration: none; 
     border-radius: 8px;
-    font-family: Arial, sans-serif;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-weight: bold;
     font-size: 16px;
     margin-top: 20px;
@@ -13,7 +13,7 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 .button-link:hover {
-    background-color: rgb(205, 50, 117); /* Matches your paragraph color */
+    background-color: rgb(205, 50, 117); 
     color: #333;
     transform: translateY(10px); /* Makes it "pop" up slightly */
     box-shadow: 0 6px 12px rgba(0,0,0,0.3);
