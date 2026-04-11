@@ -25,5 +25,6 @@ button{
 } 
 #display{
     width: 500px;
-    height:100px;
+    height:58px;
+    cursor: text;
 }

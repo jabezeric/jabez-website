@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>My first web page</h1>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis eum nulla officia temporibus. Nisi exercitationem, voluptas nostrum rem est esse tempora repellat quas blanditiis illum ea eius accusamus minus itaque!</p>
+<button>I want to make this so interactive</button>
+</body>
+</html>

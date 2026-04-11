@@ -1,0 +1,29 @@
+h1{
+   color:#f1eef1;
+   background-color:#c08383;
+   caret-color: aliceblue;
+}
+.body{
+   background-color:#c08383;
+}
+#display{
+   background-color:#f1eef1;
+   border-radius:28px;
+   width:400px;
+   height:1.9em;
+   padding:3px;
+   border-top-color: #c08383;
+   border-right-color: #c08383;
+   border-left-color: #c08383;
+   
+}
+.lib {
+   width: 35px;
+   float:right;
+   border-radius:7px;
+   cursor:pointer;
+}
+.lib:hover{
+   background-color:blue;
+   transform:translateY(5px);
+}

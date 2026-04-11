@@ -94,7 +94,7 @@
     </style>
 <body>
     <div class="calculator">
-        <input type="text" id="display" class="display" disabled>
+        <input type="text" id="display" class="display">
         <div class="buttons">
             <button class="button clear" onclick="clearDisplay()">C</button>
             <button class="button operator" onclick="appendOperation('/')">/</button>
@@ -116,8 +116,8 @@
             <button class="button" onclick="appendNumber('2')">2</button>
             <button class="button" onclick="appendNumber('3')">3</button>
 
-            <button class="button" onclick="appendNumber('0')">0</button>
-			<button class="button operator" onclick="deleteLast()">DEL</button>
+            <button class="button" id="ed" onclick="appendNumber('0')">0</button>
+			<button class="button operator" id="ee" onclick="deleteLast;">DEL</button>
         </div>
     </div>
 </body>
