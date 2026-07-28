@@ -98,10 +98,16 @@
       font-size:0.9rem;
     }
 
+    /* Image helpers */
+    .content-image{max-width:100%;height:auto;border-radius:8px;box-shadow:var(--shadow);margin:12px 0;display:block}
+    .image-row{display:flex;gap:12px;flex-wrap:wrap}
+    .image-row img{width:48%;max-width:48%;}
+
     @media (max-width:760px){
       .container{padding:20px}
       header h1{font-size:1.6rem}
       h2{font-size:1.2rem}
+      .image-row img{width:100%;max-width:100%}
     }
 
     /* Respect reduced motion */
@@ -135,14 +141,21 @@
       <article aria-labelledby="overview-heading">
         <section class="intro" aria-labelledby="overview-heading">
           <h2 id="overview-heading">Overview</h2>
-          <p><strong>Climate change</strong> refers to long-term shifts and alterations in average weather patterns and global temperatures. In the modern era, the dominant driver is human activity—especially the burning of fossil fuels, land use change (including deforestation), and certain industrial and agricultural practices that increase concentrations of greenhouse gases in the atmosphere.</p>
+          <p><strong>Climate change</strong> refers to long-term shifts and alterations in average weather patterns and global temperatures. In the modern era, the dominant driver is human activity—[...]</p>
+
+          <!-- Hero image (already in repo) -->
+          <figure>
+            <img class="content-image" src="StockCake-Climate_Change_Concept-644127-medium.jpg" alt="Illustration representing climate change: globe and warming indicators" />
+            <figcaption style="color:var(--muted);font-size:0.9rem">Illustration: climate change concept</figcaption>
+          </figure>
+
         </section>
 
         <section aria-labelledby="causes-heading">
           <h2 id="causes-heading">Main causes</h2>
 
           <h3>Greenhouse gas emissions</h3>
-          <p>Carbon dioxide (CO₂), methane (CH₄), nitrous oxide (N₂O), and some industrial gases trap heat in the atmosphere. CO₂ from burning coal, oil, and gas is the largest human-caused contributor to long-term warming.</p>
+          <p>Carbon dioxide (CO₂), methane (CH₄), nitrous oxide (N₂O), and some industrial gases trap heat in the atmosphere. CO₂ from burning coal, oil, and gas is the largest human-caused co[...]</p>
 
           <h3>Deforestation and land use</h3>
           <p>Clearing forests reduces the planet’s capacity to absorb CO₂ and often releases stored carbon when trees are burned or decay.</p>
@@ -159,12 +172,20 @@
 
           <h3>Melting ice and sea-level rise</h3>
           <p>Glacial and ice-sheet loss, combined with thermal expansion of warming oceans, is driving sea-level rise and increased coastal flooding risk.</p>
+          <figure>
+            <img class="content-image" src="istockphoto-1333043586-612x612.jpg" alt="Melting ice and sea level rise illustration" />
+            <figcaption style="color:var(--muted);font-size:0.9rem">Melting ice contributes to sea-level rise</figcaption>
+          </figure>
 
           <h3>More extreme weather</h3>
           <p>Warming changes precipitation patterns, increases heavy rainfall events, and can intensify storms and droughts in some regions.</p>
+          <figure>
+            <img class="content-image" src="StockCake-Wildfire_Engulfs_Forest-665138-medium.jpg" alt="Wildfire burning forest illustrating extreme weather and wildfire risk" />
+            <figcaption style="color:var(--muted);font-size:0.9rem">Wildfires are becoming more frequent and severe in many regions</figcaption>
+          </figure>
 
           <h3>Biodiversity and ecosystems</h3>
-          <p>Rapid change can outpace species’ ability to adapt, contributing to habitat loss, range shifts, and extinctions—particularly for sensitive ecosystems like coral reefs and alpine habitats.</p>
+          <p>Rapid change can outpace species’ ability to adapt, contributing to habitat loss, range shifts, and extinctions—particularly for sensitive ecosystems like coral reefs and alpine habit[...]</p>
 
           <h3>Human systems</h3>
           <p>Climate change creates risks for food security, human health, infrastructure, and economic stability, often hitting vulnerable communities hardest.</p>
@@ -172,6 +193,12 @@
 
         <section aria-labelledby="action-heading">
           <h2 id="action-heading">What can be done</h2>
+
+          <div class="image-row" aria-hidden="true">
+            <img src="istockphoto-1333718098-612x612.jpg" alt="Community action image" class="content-image" />
+            <img src="tuogenanki.jpg" alt="Nature scene" class="content-image" />
+          </div>
+
           <ul>
             <li>Reduce emissions: energy efficiency, shift to low-carbon electricity, cleaner transport.</li>
             <li>Protect and restore natural carbon sinks: reforestation, better land management.</li>
