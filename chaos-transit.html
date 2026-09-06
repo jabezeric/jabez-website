@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chaos Transit — NYC Disruption &amp; Reroute Planner</title>
+<style>
+  :root{
+    --bg: #0B0F17;
+    --panel: #121826;
+    --panel-2: #182136;
+    --line-hair: #232C3F;
+    --text: #E7EAF1;
+    --text-dim: #8892A6;
+    --alert: #F5A623;
+    --alert-glow: rgba(245,166,35,0.35);
+    --reroute: #35D48A;
+    --danger: #EF5D5D;
+
+    --red: #EE352E;
+    --blue: #2354C7;
+    --green: #12894F;
+    --yellow: #E0B400;
+    --grey: #9AA0AC;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
+    font-family: -apple-system, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;}
+  body{display:flex; flex-direction:column; min-height:100vh;}
+
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 22px; border-bottom:1px solid var(--line-hair);
+    background: var(--panel);
+  }
+  .wordmark{display:flex; align-items:baseline; gap:10px;}
+  .wordmark .mark{
+    font-weight:800; font-size:20px; letter-spacing:0.5px;
+  }
+  .wordmark .city{
+    font-size:12px; color:var(--text-dim); letter-spacing:1.5px; text-transform:uppercase;
+  }
+  .statuspill{
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; color:var(--text-dim); letter-spacing:0.5px;
+  }
+  .statuspill b{color:var(--alert); font-weight:700;}
+  .dot{width:7px;height:7px;border-radius:50%; background:var(--alert); box-shadow:0 0 8px var(--alert-glow);
+    animation:pulse 1.4s infinite ease-in-out;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+  main{
+    flex:1; display:grid; grid-template-columns: 300px 1fr; gap:0;
+    min-height:0;
+  }
+  aside{
+    background:var(--panel); border-right:1px solid var(--line-hair);
+    padding:20px; overflow-y:auto;
+  }
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:11px; color:var(--text-dim); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:6px;}
+  select, button{
+    width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--line-hair);
+    background:var(--panel-2); color:var(--text); font-size:14px; font-family:inherit;
+  }
+  select:focus{outline:1px solid var(--reroute);}
+  button{cursor:pointer; font-weight:600; transition:background .15s ease;}
+  button.primary{background:var(--reroute); color:#06231a; border:none;}
+  button.primary:hover{background:#2ec27e;}
+  button.ghost{background:transparent; border:1px solid var(--line-hair); color:var(--text-dim); margin-top:8px;}
+  button.ghost:hover{color:var(--text); border-color:var(--text-dim);}
+  button:focus-visible, select:focus-visible{outline:2px solid var(--reroute); outline-offset:2px;}
+
+  .divider{height:1px; background:var(--line-hair); margin:18px 0;}
+
+  .route-summary{font-size:13px; line-height:1.5;}
+  .route-summary .empty{color:var(--text-dim);}
+  .leg{
+    display:flex; align-items:center; gap:8px; padding:6px 0;
+    border-bottom:1px dashed var(--line-hair);
+  }
+  .leg:last-child{border-bottom:none;}
+  .chip{
+    width:22px; height:22px; border-radius:50%; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; font-weight:800; color:#0B0F17;
+  }
+  .leg .name{flex:1;}
+  .leg .time{color:var(--text-dim); font-size:12px;}
+  .total{margin-top:10px; padding-top:10px; border-top:1px solid var(--line-hair); display:flex; justify-content:space-between; font-size:13px;}
+  .total b{font-size:16px;}
+  .total .delta-up{color:var(--danger);}
+  .total .delta-down{color:var(--reroute);}
+
+  .mapwrap{position:relative; background:
+      radial-gradient(ellipse at 30% 20%, #101828 0%, #0B0F17 60%);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  svg{width:100%; height:100%; max-width:900px;}
+
+  .station circle{fill:#0B0F17; stroke:var(--text); stroke-width:2;}
+  .station.hub circle{stroke-width:3;}
+  .station text{fill:var(--text-dim); font-size:9px;}
+  .station.origin circle{stroke:var(--reroute); stroke-width:4;}
+  .station.destination circle{stroke:var(--alert); stroke-width:4;}
+
+  .track{fill:none; stroke-width:5; stroke-linecap:round; opacity:0.85;}
+  .track.disrupted{stroke-dasharray: 3 7; opacity:0.5; animation:dash 1s linear infinite;}
+  @keyframes dash{to{stroke-dashoffset:-20;}}
+
+  .route-path{fill:none; stroke:#fff; stroke-width:7; stroke-linecap:round; opacity:0; filter: drop-shadow(0 0 6px rgba(255,255,255,0.5));}
+  .route-path.old{stroke:var(--text-dim); stroke-dasharray:2 6; opacity:0; stroke-width:4;}
+  .route-path.show{opacity:0.95; transition:opacity .4s ease;}
+  .route-path.old.show{opacity:0.55;}
+
+  footer{
+    border-top:1px solid var(--line-hair); background:var(--panel);
+    padding:0; overflow:hidden; height:34px; display:flex; align-items:center;
+  }
+  .ticker-label{
+    flex:0 0 auto; background:var(--alert); color:#241800; font-weight:800; font-size:11px;
+    letter-spacing:1px; padding:0 12px; height:100%; display:flex; align-items:center;
+  }
+  .ticker-track{flex:1; overflow:hidden; position:relative; height:100%;}
+  .ticker-content{
+    position:absolute; white-space:nowrap; font-size:12.5px; color:var(--text);
+    display:flex; align-items:center; height:100%; will-change:transform;
+  }
+  .ticker-content span{margin-right:48px; color:var(--text-dim);}
+  .ticker-content span b{color:var(--text); font-weight:600;}
+
+  @media (max-width: 720px){
+    main{grid-template-columns: 1fr;}
+    aside{border-right:none; border-bottom:1px solid var(--line-hair);}
+    .mapwrap{min-height:60vh;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">
+    <span class="mark">CHAOS TRANSIT</span>
+    <span class="city">NYC Subway · Live Reroute Engine</span>
+  </div>
+  <div class="statuspill">
+    <span class="dot"></span>
+    <span id="statusText">0 active alerts</span>
+  </div>
+</header>
+
+<main>
+  <aside>
+    <div class="field">
+      <label for="origin">From</label>
+      <select id="origin"></select>
+    </div>
+    <div class="field">
+      <label for="destination">To</label>
+      <select id="destination"></select>
+    </div>
+    <button class="primary" id="planBtn">Plan route</button>
+    <button class="ghost" id="chaosBtn">⚡ Trigger a disruption now</button>
+
+    <div class="divider"></div>
+
+    <div class="field" style="margin-bottom:0;">
+      <label>Current route</label>
+      <div class="route-summary" id="routeSummary">
+        <div class="empty">Pick a start and end station, then plan a route.</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="mapwrap">
+    <svg id="map" viewBox="0 0 340 560"></svg>
+  </div>
+</main>
+
+<footer>
+  <div class="ticker-label">SERVICE ALERTS</div>
+  <div class="ticker-track">
+    <div class="ticker-content" id="ticker">
+      <span>No active disruptions — system running normally.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ---------------------------------------------------------
+   1. NETWORK MODEL
+   A simplified schematic of the NYC subway: real station
+   names & real line-color conventions, stylized (not
+   geographically literal) positions and travel times so the
+   graph has genuine redundant paths for rerouting to shine.
+--------------------------------------------------------- */
+
+const LINES = {
+  red:    { label: "1·2·3", color: getVar('--red') },
+  blue:   { label: "A·C·E", color: getVar('--blue') },
+  green:  { label: "4·5·6", color: getVar('--green') },
+  yellow: { label: "N·Q·R·W", color: getVar('--yellow') },
+  grey:   { label: "L", color: getVar('--grey') },
+};
+
+function getVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+const STATIONS = {
+  s1:  { name: "96 St",                    x: 60,  y: 30  },
+  s2:  { name: "72 St",                    x: 60,  y: 90  },
+  s3:  { name: "59 St-Columbus Circle",    x: 60,  y: 150 },
+  s4:  { name: "Times Sq-42 St",           x: 120, y: 210 },
+  s5:  { name: "34 St-Herald Sq",          x: 175, y: 250 },
+  s6:  { name: "23 St",                    x: 60,  y: 250 },
+  s7:  { name: "14 St / 8 Ave",            x: 60,  y: 310 },
+  s8:  { name: "14 St-Union Sq",           x: 225, y: 320 },
+  s9:  { name: "8 St-NYU",                 x: 195, y: 285 },
+  s10: { name: "W 4 St",                   x: 60,  y: 365 },
+  s11: { name: "Broadway-Lafayette St",    x: 225, y: 370 },
+  s12: { name: "Canal St",                 x: 135, y: 405 },
+  s13: { name: "Chambers St",              x: 60,  y: 445 },
+  s14: { name: "Fulton St",                x: 135, y: 460 },
+  s15: { name: "Wall St",                  x: 195, y: 490 },
+  s16: { name: "Grand Central-42 St",      x: 265, y: 210 },
+  s17: { name: "59 St-Lex Ave",            x: 265, y: 150 },
+  s18: { name: "86 St",                    x: 265, y: 90  },
+};
+
+// [stationA, stationB, line, minutes]
+const EDGES = [
+  ["s1","s2","red",3], ["s2","s3","red",3], ["s3","s4","red",4],
+
+  ["s3","s4","blue",4], ["s4","s6","blue",3], ["s6","s7","blue",3],
+  ["s7","s10","blue",3], ["s10","s12","blue",4], ["s12","s13","blue",3],
+  ["s13","s14","blue",3],
+
+  ["s18","s17","green",3], ["s17","s16","green",3], ["s16","s8","green",4],
+  ["s8","s12","green",4], ["s12","s14","green",3], ["s14","s15","green",3],
+
+  ["s4","s5","yellow",3], ["s5","s9","yellow",3], ["s9","s8","yellow",3],
+  ["s8","s11","yellow",3],
+
+  ["s7","s8","grey",4], ["s8","s11","grey",3], ["s11","s16","grey",4],
+];
+
+const graph = {};
+Object.keys(STATIONS).forEach(id => graph[id] = []);
+EDGES.forEach(([a,b,line,w]) => {
+  graph[a].push({to:b, line, w});
+  graph[b].push({to:a, line, w});
+});
+
+const stationLines = {};
+Object.keys(STATIONS).forEach(id => stationLines[id] = new Set());
+EDGES.forEach(([a,b,line]) => { stationLines[a].add(line); stationLines[b].add(line); });
+
+
+/* ---------------------------------------------------------
+   2. ROUTING (Dijkstra, line-aware, disruption-aware)
+--------------------------------------------------------- */
+
+const disruptedLines = new Set();
+
+function shortestPath(startId, endId){
+  const dist = {}, prev = {}, prevLine = {}, visited = new Set();
+  Object.keys(STATIONS).forEach(id => dist[id] = Infinity);
+  dist[startId] = 0;
+
+  while(true){
+    let u = null, best = Infinity;
+    for(const id of Object.keys(STATIONS)){
+      if(!visited.has(id) && dist[id] < best){ best = dist[id]; u = id; }
+    }
+    if(u === null) break;
+    if(u === endId) break;
+    visited.add(u);
+
+    for(const edge of graph[u]){
+      if(disruptedLines.has(edge.line)) continue; // disrupted lines are impassable
+      const alt = dist[u] + edge.w;
+      if(alt < dist[edge.to]){
+        dist[edge.to] = alt;
+        prev[edge.to] = u;
+        prevLine[edge.to] = edge.line;
+      }
+    }
+  }
+
+  if(dist[endId] === Infinity) return null;
+
+  const path = [];
+  let cur = endId;
+  while(cur !== startId){
+    path.unshift({ station: cur, viaLine: prevLine[cur] });
+    cur = prev[cur];
+  }
+  path.unshift({ station: startId, viaLine: null });
+  return { path, total: dist[endId] };
+}
+
+
+/* ---------------------------------------------------------
+   3. RENDER MAP
+--------------------------------------------------------- */
+
+const svg = document.getElementById('map');
+
+function drawNetwork(){
+  let html = "";
+
+  // tracks
+  EDGES.forEach(([a,b,line]) => {
+    const A = STATIONS[a], B = STATIONS[b];
+    const disrupted = disruptedLines.has(line);
+    html += `<path class="track${disrupted?' disrupted':''}" data-line="${line}"
+      d="M${A.x},${A.y} L${B.x},${B.y}" stroke="${LINES[line].color}"/>`;
+  });
+
+  // route overlays (drawn on top, filled in by renderRoute)
+  html += `<path class="route-path old" id="oldRoutePath" />`;
+  html += `<path class="route-path" id="newRoutePath" />`;
+
+  // stations
+  Object.entries(STATIONS).forEach(([id, s]) => {
+    const isHub = stationLines[id].size > 1;
+    html += `<g class="station${isHub?' hub':''}" id="node-${id}">
+      <circle cx="${s.x}" cy="${s.y}" r="${isHub?5:3.5}"></circle>
+      <text x="${s.x+8}" y="${s.y+3}">${s.name}</text>
+    </g>`;
+  });
+
+  svg.innerHTML = html;
+}
+
+function pathToCoords(path){
+  return path.map(p => STATIONS[p.station]).map(s => `${s.x},${s.y}`).join(" L");
+}
+
+function renderRoute(newPath, oldPath){
+  const newEl = document.getElementById('newRoutePath');
+  const oldEl = document.getElementById('oldRoutePath');
+
+  if(oldPath){
+    oldEl.setAttribute('d', `M${pathToCoords(oldPath)}`);
+    oldEl.classList.add('show');
+  } else {
+    oldEl.classList.remove('show');
+  }
+
+  if(newPath){
+    newEl.setAttribute('d', `M${pathToCoords(newPath)}`);
+    requestAnimationFrame(()=> newEl.classList.add('show'));
+  } else {
+    newEl.classList.remove('show');
+  }
+
+  // highlight origin/destination markers
+  document.querySelectorAll('.station').forEach(n => n.classList.remove('origin','destination'));
+  if(newPath && newPath.length){
+    document.getElementById('node-'+newPath[0].station)?.classList.add('origin');
+    document.getElementById('node-'+newPath[newPath.length-1].station)?.classList.add('destination');
+  }
+}
+
+
+/* ---------------------------------------------------------
+   4. UI WIRING
+--------------------------------------------------------- */
+
+const originSel = document.getElementById('origin');
+const destSel = document.getElementById('destination');
+const routeSummary = document.getElementById('routeSummary');
+const statusText = document.getElementById('statusText');
+const ticker = document.getElementById('ticker');
+
+Object.entries(STATIONS).forEach(([id, s]) => {
+  originSel.innerHTML += `<option value="${id}">${s.name}</option>`;
+  destSel.innerHTML += `<option value="${id}">${s.name}</option>`;
+});
+originSel.value = "s1";
+destSel.value = "s15";
+
+let currentResult = null; // {path, total}
+
+function summarize(result, deltaFromMinutes){
+  if(!result){
+    routeSummary.innerHTML = `<div class="empty" style="color:var(--danger)">
+      No route available — every line connecting these stations is currently disrupted.
+    </div>`;
+    return;
+  }
+  const legs = [];
+  let curLine = null, legStart = null, legMinutes = 0;
+
+  result.path.forEach((p, i) => {
+    if(i === 0) { legStart = STATIONS[p.station].name; return; }
+    if(p.viaLine !== curLine){
+      if(curLine) legs.push({line: curLine, from: legStart, to: STATIONS[result.path[i-1].station].name});
+      curLine = p.viaLine;
+      legStart = STATIONS[result.path[i-1].station].name;
+    }
+    if(i === result.path.length - 1){
+      legs.push({line: curLine, from: legStart, to: STATIONS[p.station].name});
+    }
+  });
+
+  let html = legs.map(leg => `
+    <div class="leg">
+      <div class="chip" style="background:${LINES[leg.line].color}">${LINES[leg.line].label.split('·')[0]}</div>
+      <div class="name">${leg.to}</div>
+      <div class="time">${LINES[leg.line].label}</div>
+    </div>
+  `).join("");
+
+  let deltaHtml = "";
+  if(deltaFromMinutes !== undefined){
+    const diff = result.total - deltaFromMinutes;
+    if(diff > 0) deltaHtml = `<span class="delta-up">+${diff} min vs original</span>`;
+    else if(diff < 0) deltaHtml = `<span class="delta-down">${diff} min vs original</span>`;
+    else deltaHtml = `<span style="color:var(--text-dim)">unchanged</span>`;
+  }
+
+  routeSummary.innerHTML = html + `<div class="total"><span>Total time</span><b>${result.total} min</b></div>` +
+    (deltaHtml ? `<div class="total"><span></span>${deltaHtml}</div>` : "");
+}
+
+function planRoute(){
+  const result = shortestPath(originSel.value, destSel.value);
+  currentResult = result;
+  renderRoute(result ? result.path : null, null);
+  summarize(result);
+}
+
+document.getElementById('planBtn').addEventListener('click', planRoute);
+
+
+/* ---------------------------------------------------------
+   5. DISRUPTION SIMULATOR (stand-in for GTFS-RT alerts feed)
+--------------------------------------------------------- */
+
+const REASONS = [
+  "signal problem",
+  "train with mechanical trouble",
+  "NYPD activity at a station",
+  "track maintenance",
+  "flooding on the tracks",
+  "unauthorized person on the tracks",
+];
+
+const logEntries = [];
+
+function pushLog(text){
+  logEntries.unshift({ time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}), text });
+  if(logEntries.length > 12) logEntries.pop();
+  renderTicker();
+}
+
+function renderTicker(){
+  if(logEntries.length === 0){
+    ticker.innerHTML = `<span>No active disruptions — system running normally.</span>`;
+    return;
+  }
+  ticker.innerHTML = logEntries.map(e => `<span><b>${e.time}</b> — ${e.text}</span>`).join("");
+  // duplicate content so the marquee loops seamlessly
+  ticker.innerHTML += ticker.innerHTML;
+  animateTicker();
+}
+
+let tickerOffset = 0, tickerRAF = null;
+function animateTicker(){
+  cancelAnimationFrame(tickerRAF);
+  tickerOffset = 0;
+  const track = ticker.parentElement;
+  function step(){
+    tickerOffset -= 0.6;
+    const halfWidth = ticker.scrollWidth / 2;
+    if(Math.abs(tickerOffset) >= halfWidth) tickerOffset = 0;
+    ticker.style.transform = `translateX(${tickerOffset}px)`;
+    tickerRAF = requestAnimationFrame(step);
+  }
+  step();
+}
+
+function triggerDisruption(){
+  const available = Object.keys(LINES).filter(l => !disruptedLines.has(l));
+  if(available.length === 0) return;
+  const line = available[Math.floor(Math.random() * available.length)];
+  const reason = REASONS[Math.floor(Math.random() * REASONS.length)];
+
+  disruptedLines.add(line);
+  drawNetwork();
+  pushLog(`${LINES[line].label} trains affected by ${reason} — expect delays or reroutes.`);
+  statusText.innerHTML = `<b>${disruptedLines.size}</b> active alert${disruptedLines.size>1?'s':''}`;
+
+  // if the disruption hits the route currently on screen, recalculate live
+  if(currentResult && currentResult.path.some(p => p.viaLine === line)){
+    const oldPath = currentResult.path;
+    const oldTotal = currentResult.total;
+    const newResult = shortestPath(originSel.value, destSel.value);
+    currentResult = newResult;
+    renderRoute(newResult ? newResult.path : null, oldPath);
+    summarize(newResult, oldTotal);
+    if(newResult){
+      pushLog(`Rerouted around ${LINES[line].label}: new ETA ${newResult.total} min (was ${oldTotal} min).`);
+    } else {
+      pushLog(`No alternate route currently available between your two stations.`);
+    }
+  }
+
+  // auto-clear this disruption after a while, like a real alert resolving
+  setTimeout(() => {
+    disruptedLines.delete(line);
+    drawNetwork();
+    if(originSel.value && destSel.value){
+      // silently keep whatever route is displayed; a real system would
+      // offer to switch back once trains resume normal service
+    }
+    statusText.innerHTML = `<b>${disruptedLines.size}</b> active alert${disruptedLines.size!==1?'s':''}`;
+    pushLog(`${LINES[line].label} service has resumed normally.`);
+  }, 22000);
+}
+
+document.getElementById('chaosBtn').addEventListener('click', triggerDisruption);
+
+// ambient chaos: a disruption every ~18s on its own, so the demo feels alive
+setInterval(triggerDisruption, 18000);
+
+
+/* ---------------------------------------------------------
+   6. INIT
+--------------------------------------------------------- */
+drawNetwork();
+planRoute();
+renderTicker();
+</script>
+</body>
+</html>
